@@ -22,7 +22,7 @@ jobs:
       security-events: write
 
     steps:
-      - name: "Clonación de  repositorio"
+      - name: "Clonación de repositorio"
         uses: actions/checkout@v6
 
       - name: "Inicializar CodeQL"
@@ -46,11 +46,46 @@ jobs:
           ref: ${{ github.ref }}
 
   sca:
-    name: "Análisis SCA"
+    name: "Análisis SCA con OWASP Dependency-Check"
     needs:
       - sast
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Mensaje temporal SCA"
-        run: echo "SAST aprobado. Comienza el análisis SCA."
+      name: "SCA - OWASP Dependency-Check"
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Clonar repositorio"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Java para Dependency-Check"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
+
+      - name: "Verificar Maven"
+        run: mvn --version
+
+      - name: "Ejecutar análisis SCA"
+        run: |
+          mvn --batch-mode \
+            org.owasp:dependency-check-maven:12.2.2:check \
+            -DfailBuildOnCVSS=4 \
+            -Dformat=HTML,JSON \
+            -Dodc.outputDirectory=target/dependency-check \
+            -DfailOnError=true \
+            -DossindexAnalyzerEnabled=false
+
+      - name: "Guardar reporte SCA"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "dependency-check-report"
+          path: "target/dependency-check/"
+          if-no-files-found: warn
