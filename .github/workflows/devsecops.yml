@@ -38,6 +38,11 @@ jobs:
           category: "/language:java-kotlin"
           wait-for-processing: true
 
+      - name: "Configurar Python para el Quality Gate"
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
       - name: "Aplicar Quality Gate SAST"
         uses: advanced-security/policy-as-code@v2.11.1
         with:
@@ -51,16 +56,12 @@ jobs:
       - sast
     runs-on: ubuntu-latest
 
-    steps:
-      name: "SCA - OWASP Dependency-Check"
-    runs-on: ubuntu-latest
-
     permissions:
       contents: read
 
     steps:
       - name: "Clonar repositorio"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "Configurar Java para Dependency-Check"
         uses: actions/setup-java@v4
