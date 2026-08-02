@@ -82,7 +82,7 @@ jobs:
             -DnvdApiKeyEnvironmentVariable=NVD_API_KEY \
             -DnvdMaxRetryCount=10 \
             -DfailBuildOnCVSS=4 \
-            -Dformat=HTML,JSON \
+            -Dformats=HTML,JSON \
             -Dodc.outputDirectory=target/dependency-check \
             -DfailOnError=true \
             -DossindexAnalyzerEnabled=false
