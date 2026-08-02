@@ -74,19 +74,15 @@ jobs:
         run: mvn --version
 
       - name: "Ejecutar análisis SCA"
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           mvn --batch-mode \
             org.owasp:dependency-check-maven:12.2.2:check \
+            -DnvdApiKeyEnvironmentVariable=NVD_API_KEY \
+            -DnvdMaxRetryCount=10 \
             -DfailBuildOnCVSS=4 \
             -Dformat=HTML,JSON \
             -Dodc.outputDirectory=target/dependency-check \
             -DfailOnError=true \
             -DossindexAnalyzerEnabled=false
-
-      - name: "Guardar reporte SCA"
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: "dependency-check-report"
-          path: "target/dependency-check/"
-          if-no-files-found: warn
