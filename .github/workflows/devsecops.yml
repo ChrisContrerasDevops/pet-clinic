@@ -53,7 +53,7 @@ jobs:
   sca:
     name: "Análisis SCA con OWASP Dependency-Check"
     #needs:
-     # - sast
+    #  - sast
     runs-on: ubuntu-latest
 
     permissions:
@@ -86,3 +86,70 @@ jobs:
             -Dodc.outputDirectory=target/dependency-check \
             -DfailOnError=true \
             -DossindexAnalyzerEnabled=false
+
+  image_security:
+    name: "Build Docker e Image Security con Trivy"
+    #needs:
+      #- sast
+      #- sca
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: "Clonar repositorio"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "maven"
+
+      - name: "Compilar aplicación"
+        run: |
+          mvn --batch-mode clean package -DskipTests
+          ls -lah target/*.jar
+
+      - name: "Construir imagen Docker"
+        run: |
+          docker build \
+            --tag pet-clinic:${{ github.sha }} \
+            .
+
+      - name: "Verificar imagen construida"
+        run: |
+          docker image inspect pet-clinic:${{ github.sha }}
+          docker image ls pet-clinic
+
+      - name: "Analizar imagen con Trivy"
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: "image"
+          image-ref: "pet-clinic:${{ github.sha }}"
+          scanners: "vuln"
+          vuln-type: "os,library"
+          format: "table"
+          output: "trivy-report.txt"
+          severity: "MEDIUM,HIGH,CRITICAL"
+          exit-code: "1"
+          ignore-unfixed: false
+
+      - name: "Mostrar reporte de Trivy"
+        if: always()
+        run: |
+          if [ -f trivy-report.txt ]; then
+            cat trivy-report.txt
+          else
+            echo "No se generó el reporte de Trivy."
+          fi
+
+      - name: "Guardar reporte de Trivy"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "trivy-image-security-report"
+          path: "trivy-report.txt"
+          if-no-files-found: warn          
