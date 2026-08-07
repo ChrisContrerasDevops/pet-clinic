@@ -89,9 +89,9 @@ jobs:
 
   image_security:
     name: "Build Docker e Image Security con Trivy"
-    #needs:
-      #- sast
-      #- sca
+    needs:
+      - sast
+      - sca
     runs-on: ubuntu-latest
 
     permissions:
