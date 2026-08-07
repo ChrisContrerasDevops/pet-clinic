@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-    sast:
+  sast:
     name: "Análisis SAST con CodeQL"
     runs-on: ubuntu-latest
 
@@ -180,4 +180,4 @@ jobs:
         with:
           name: "trivy-image-security-report"
           path: "trivy-report.txt"
-          if-no-files-found: warn          
+          if-no-files-found: warn
