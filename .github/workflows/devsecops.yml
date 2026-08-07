@@ -80,8 +80,8 @@ jobs:
 
   sca:
     name: "Análisis SCA con OWASP Dependency-Check"
-    needs:
-      - sast
+    #needs:
+    #  - sast
     runs-on: ubuntu-latest
 
     permissions:
